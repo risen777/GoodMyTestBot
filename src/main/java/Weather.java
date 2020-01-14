@@ -1,6 +1,7 @@
+import org.json.JSONArray;
+import org.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Scanner;
 
@@ -8,15 +9,34 @@ import java.util.Scanner;
  * Created by Sergey
  */
 public class Weather {
-    
-    public  static String getWeather(String message,Model model) throws IOException {
-        URL url =new URL("http://api.openweathermap.org/data/2.5/weather?q="+ message +"&units=metric&appid=80ff418199a1234f3b8b603774b65b45");
-        Scanner in =new Scanner((InputStream) url.getContent());
-        String result ="";
-        while (in.hasNext()){
-            result +=in.nextLine();
+
+    public static String getWeather(String message, Model model) throws IOException {
+        URL url = new URL("http://api.openweathermap.org/data/2.5/weather?q=" + message + "&units=metric&appid=80ff418199a1234f3b8b603774b65b45");
+        Scanner in = new Scanner((InputStream) url.getContent());
+        String result = "";
+        while (in.hasNext()) {
+            result += in.nextLine();
         }
-        return result;
+        JSONObject object = new JSONObject(result);
+        model.setName(object.getString("name"));
+
+        JSONObject main = object.getJSONObject("main");
+        model.setTemp(main.getDouble("temp"));
+        model.setHumidity(main.getDouble("humidity"));
+
+
+        JSONArray getArray = object.getJSONArray("weather");
+        for(int i=0;i< getArray.length();i++){
+            JSONObject obj = getArray.getJSONObject(i);
+            model.setIcon((String) obj.get("icon"));
+            model.setMain((String) obj.get("main"));
+        }
+
+        return  "City: " + model.getName() + "\n"+
+                "Temperature: " +model.getTemp()+ "C" + "\n"+
+                "Humidity: " + model.getHumidity() +"%"+ "\n"+
+                "Main: " + model.getMain()+ "\n"+
+                "http://openweathermap.org/img/wn/" + model.getIcon()+ ".png";
     }
 
 }
